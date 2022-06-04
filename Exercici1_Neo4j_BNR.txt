@@ -1,0 +1,46 @@
+// Eliminació de les dades
+MATCH (n) DETACH DELETE (n);
+
+// Eliminació de les restriccions si ja existeixen
+DROP CONSTRAINT UniqueIdLlar IF EXISTS;
+DROP CONSTRAINT UniqueIndividualId IF EXISTS;
+
+// Càrrega de les dades a partir del csv d'habitatges
+LOAD CSV WITH HEADERS FROM 'file:///HABITATGES.csv' AS row
+WITH row WHERE row.Municipi IS NOT NULL AND row.Id_Llar IS NOT NULL AND row.Any_Padro IS NOT NULL
+CREATE (:Habitatge {municipi: row.Municipi, id_llar: toInteger(row.Id_Llar), any_padro: toInteger(row.Any_Padro), carrer: row.Carrer, numero: toInteger(row.Numero) });
+
+// Creació de la restricció d'unicitat dels habitatges
+CREATE CONSTRAINT UniqueIdLlar ON (h:Habitatge) ASSERT (h.id_llar, h.any_padro, h.municipi) IS NODE KEY;
+
+// Càrrega de les dades a partir del csv d'individus
+LOAD CSV WITH HEADERS FROM 'file:///INDIVIDUAL.csv' AS row 
+WITH row WHERE row.Id IS NOT NULL
+CREATE (:Individual {id: toInteger(row.Id), year: toInteger(row.Year), name: row.name, surname: row.surname, second_surname: row.second_surname});
+
+// Creació de la restricció d'unicitat dels individus
+CREATE CONSTRAINT UniqueIndividualId ON (i:Individual) ASSERT (i.id) IS NODE KEY;
+
+// Càrrega de les dades a partir del csv de relacions de vivenda
+LOAD CSV WITH HEADERS FROM 'file:///VIU.csv' AS row
+MATCH (i:Individual), (h:Habitatge)
+WHERE toInteger(row.IND) = i.id
+    AND row.Location = h.municipi
+    AND toInteger(row.Year) = i.year
+    AND toInteger(row.HOUSE_ID) = h.id_llar
+CREATE (i)-[:VIU]->(h);
+
+// Càrrega de les dades a partir del csv de relacions familiars
+LOAD CSV WITH HEADERS FROM 'file:///FAMILIA.csv' AS row
+MATCH (i1:Individual), (i2:Individual)
+WHERE i1.id = toInteger(row.ID_1)
+    AND i2.id = toInteger(row.ID_2)
+CREATE (i1)-[r:FAMILIA]->(i2)
+SET r.relacio = row.Relacio_Harmonitzada;
+
+// Càrrega de les dades a partir del csv de relacions de mateixa persona
+LOAD CSV WITH HEADERS FROM 'file:///SAME_AS.csv' AS row
+MATCH (i1:Individual), (i2:Individual)
+WHERE i1.id = toInteger(row.Id_A)
+    AND i2.id = toInteger(row.Id_B)
+CREATE (i1)-[:SAME_AS]->(i2);
