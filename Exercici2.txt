@@ -1,0 +1,44 @@
+//1. Dels padró de 1866 de Castellví de Rosanes(CR), retorna el número d'habitants
+//i la llista de noms. Elimina duplicats i nan
+MATCH (i:Individual)-[:VIU]->(h:Habitatge)
+WHERE (i.surname <> 'nan' and h.municipi='CR')
+RETURN count(i.surname) AS `Num Habitants`, collect(distinct i.surname) AS  `Llistat`
+
+//2. Dels padrons de Sant Feliu de Llobregat (SFLL) d'abans de l'any
+//1840 (no inclòs), retorna la població, l'any del padró i la llista d'identificadors
+// dels habitatges de cada padró. Ordena els resultats per any de padró.
+MATCH (i:Individual)-[:VIU]->(h:Habitatge)
+WHERE (h.municipi = 'SFLL' and h.any_padro < 1840)
+RETURN DISTINCT h.any_padro AS `Any`, collect(distinct(h.id_llar)) AS `Llista Llars`
+ORDER BY h.any_padro;
+
+//3. Retorna el nom de les persones que vivien al mateix habitatge que
+// 'rafel marti' (no té segon cognom) segons el padró de 1838 de Sant Feliu
+// de Llobregat(SFLL). Retorna la informació en graf i en llista.
+// MODE GRAF
+
+MATCH (i1:Individual {name:"rafel", surname:"marti"})-[:VIU]->(h:Habitatge)<-[:VIU]-(i2:Individual), (i1)-[:FAMILIA]->(i2)
+WHERE h.any_padro = 1838 AND h.municipi = "SFLL"
+RETURN i1, i2;
+
+// MODE LLISTA
+MATCH (i1:Individual {name:"rafel", surname:"marti"})-[:VIU]->(h:Habitatge)<-[:VIU]-(i2:Individual), (i1)-[:FAMILIA]->(i2)
+WHERE h.any_padro = 1838 AND h.municipi = "SFLL"
+RETURN i1.name as `Nom`, collect(DISTINCT i2.name)AS `Convivents`;
+
+//4. Retorna totes les aparicions de 'Miguel ballester'. Fes servir la relació
+// SAME_AS per poder retornar totes les instancies, independentment de
+// si hi ha variacions lèxiques (ex. diferents formes d'escriure el seu nom/cognom).
+//Mostra la informació en forma de subgraf.
+
+MATCH path=((i1:Individual)-[:SAME_AS]-(i2:Individual))
+where i1.name='miguel' and i1.surname='ballester'
+return path;
+
+//5. Mostra totes les persones relacionades amb 'antonio farran'. Mostra la informació en
+// forma de taula: el nom, cognom1, cognom2, i  tipus de relació.
+
+MATCH (i1:Individual)-[rel]-(i2:Individual)
+WHERE toLower(i1.name) = 'antonio' and toLower(i1.surname) = 'farran'
+RETURN i2.name AS `nom`, i2.surname AS `cognom1`, i2.second_surname AS `cognom2`, type(rel) AS `relació`
+ORDER BY i2.name
