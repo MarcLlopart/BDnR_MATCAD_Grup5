@@ -17,7 +17,7 @@ ORDER BY h.any_padro;
 // de Llobregat(SFLL). Retorna la informació en graf i en llista.
 // MODE GRAF
 
-MATCH (i1:Individual {name:"rafel", surname:"marti"})-[:VIU]->(h:Habitatge)<-[:VIU]-(i2:Individual), (i1)-[:FAMILIA]->(i2)
+MATCH (i1:Individual {name:"rafel", surname:"marti"})-[:VIU]->(h:Habitatge)<-[:VIU]-(i2:Individual)
 WHERE h.any_padro = 1838 AND h.municipi = "SFLL"
 RETURN i1, i2;
 
