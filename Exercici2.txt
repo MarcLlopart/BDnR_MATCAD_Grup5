@@ -42,3 +42,47 @@ MATCH (i1:Individual)-[rel]-(i2:Individual)
 WHERE toLower(i1.name) = 'antonio' and toLower(i1.surname) = 'farran'
 RETURN i2.name AS `nom`, i2.surname AS `cognom1`, i2.second_surname AS `cognom2`, type(rel) AS `relació`
 ORDER BY i2.name
+
+//6. Llisteu totes les relacions familiars que hi ha. 
+
+MATCH (a:Individual)-[rel]->(b:Individual) 
+WHERE rel.relacio <> "null" 
+RETURN DISTINCT rel.relacio AS relacio
+
+//7. Identifiqueu els nodes que representen el mateix habitatge (carrer i numero) al llarg 
+// dels anys de Sant Feliu del Llobregat (SFLL). Mostreu el resultat dels habitatges que 
+// tingueu totes dues informacions (carrer i numero), el nombre total d’habitatges, el 
+// llistat d’anys dels padrons i el llistat de les Ids de les llars. Ordeneu de més a menys 
+// segons el total d’habitatges i mostreu-ne els 10 primers.
+
+MATCH (a:Habitatge) 
+WHERE a.municipi = "SFLL" AND a.carrer <> "null" AND a.numero <> "null" 
+RETURN a.carrer AS carrer, a.numero AS numero, size(collect(a)) AS total, collect(a.any_padro) AS anys, collect(a.id_llar) AS IDs ORDER BY total DESC LIMIT 10
+
+//8. Mostreu les famílies de Castellví de Rosanes amb més de 3 fills. Mostreu el nom i 
+// cognoms del cap de família i el nombre de fills. Ordeneu-les pel nombre de fills fins 
+// a un límit de 20, de més a menys.
+
+MATCH (a:Habitatge)<-[:VIU]-(b:Individual)<-[rel:FAMILIA]-(c:Individual) 
+WHERE a.municipi = "CR" AND rel.relacio <> "familiar" AND rel.relacio =~ "f.*" 
+WITH c, size(collect(b.id)) AS num 
+WHERE num > 3 
+RETURN c.name AS name, c.surname AS surname, c.second_surname AS second_surname, num ORDER BY num DESC LIMIT 20
+
+//9. Mitja de fills a Sant Feliu del Llobregat l’any 1881 per família. Mostreu el total de 
+// fills, el nombre d’habitatges i la mitja.
+
+MATCH (a:Individual)-[rel:FAMILIA]->(b:Individual)-[:VIU]->(c:Habitatge)<-[:VIU]-(a)
+WHERE c.any_padro = 1881 AND c.municipi = 'SFLL' AND rel.relacio =~ "f.*" 
+RETURN count(distinct a) as total_fills, count(distinct c) as num_llars, round(count(distinct a)/toFloat(count(distinct c)), 2) as mitjana
+
+//10. Per cada any que hi ha a la base de dades, quin és el carrer amb menys habitants de 
+// Sant Feliu de Llobregat?
+
+MATCH (a:Individual)-[:VIU]->(b:Habitatge) 
+WHERE b.municipi = "SFLL" 
+WITH b.any_padro as any, b.carrer as carrer, count(a) as total 
+ORDER BY total 
+WITH any, collect(carrer)[0] as min_carrer 
+RETURN any, min_carrer 
+ORDER BY any
