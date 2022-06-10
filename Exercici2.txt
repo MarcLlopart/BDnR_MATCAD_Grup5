@@ -1,15 +1,15 @@
 //1. Dels padró de 1866 de Castellví de Rosanes(CR), retorna el número d'habitants
-//i la llista de noms. Elimina duplicats i nan
+//i la llista de noms. Elimina duplicats i nan (Revisar) 
 MATCH (i:Individual)-[:VIU]->(h:Habitatge)
-WHERE (i.surname <> 'nan' and h.municipi='CR')
-RETURN count(i.surname) AS `Num Habitants`, collect(distinct i.surname) AS  `Llistat`
+WHERE (i.name <> 'nan' and h.municipi='CR')
+RETURN count(i.name) AS `Num Habitants`, collect(distinct i.name) AS  `Llistat`
 
 //2. Dels padrons de Sant Feliu de Llobregat (SFLL) d'abans de l'any
 //1840 (no inclòs), retorna la població, l'any del padró i la llista d'identificadors
-// dels habitatges de cada padró. Ordena els resultats per any de padró.
+// dels habitatges de cada padró. Ordena els resultats per any de padró. (Revisar)
 MATCH (i:Individual)-[:VIU]->(h:Habitatge)
 WHERE (h.municipi = 'SFLL' and h.any_padro < 1840)
-RETURN DISTINCT h.any_padro AS `Any`, collect(distinct(h.id_llar)) AS `Llista Llars`
+RETURN DISTINCT h.municipi AS `Població`,h.any_padro AS `Any`, collect(distinct(h.id_llar)) AS `Llista Llars`
 ORDER BY h.any_padro;
 
 //3. Retorna el nom de les persones que vivien al mateix habitatge que
