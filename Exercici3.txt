@@ -43,3 +43,22 @@ MERGE (h)-[:MATEIX_HAB]->(h2)
 CALL gds.graph.project('Ex3_2',['Individual', 'Habitatge'], ['VIU', 'FAMILIA', 'MATEIX_HAB'])
 
 
+cypher 
+
+CALL gds.nodeSimilarity.write('Ex3_2',{
+  writeRelationshipType:'SIMILAR',
+  writeProperty:'score',
+  similarityCutoff:0.45,
+  topK:5
+  })
+YIELD nodesCompared, relationshipsWritten
+
+//cas 1
+MATCH (i1:Individual)-[:SAME_AS]-(i2:Individual)
+WHERE (i1)-[:SIMILAR]-(i2)
+RETURN i1, i2
+
+//cas 2
+MATCH (h:Habitatge)-[:MATEIX_HAB]-(h2:Habitatge)
+WHERE (h)-[:SIMILAR]-(h2)
+RETURN count(*) as Coincidencies
