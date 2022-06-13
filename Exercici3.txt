@@ -42,8 +42,7 @@ MERGE (h)-[:MATEIX_HAB]->(h2)
 //Projeccio del graf amb les relacions entre Individu i Habitatge
 CALL gds.graph.project('Ex3_2',['Individual', 'Habitatge'], ['VIU', 'FAMILIA', 'MATEIX_HAB'])
 
-
-cypher 
+//Escribim la similaritat
 
 CALL gds.nodeSimilarity.write('Ex3_2',{
   writeRelationshipType:'SIMILAR',
