@@ -1,0 +1,28 @@
+//A) 
+CALL gds.graph.project('Ex3_1', ['Individual', 'Habitatge'], 'VIU');
+
+//Distribució de les mides de les components conexes
+CALL gds.wcc.stream('Ex3_1')
+YIELD componentId, nodeId
+WITH gds.util.asNode(nodeId) AS n1, componentId AS c
+WITH size(collect(n1)) AS Components, c
+RETURN Components, size(collect(Components)) AS `freq`
+ORDER BY Components DESC;
+
+//Distribució de components conexes per munipi i any
+CALL gds.wcc.stream('Ex3_1')
+YIELD componentId, nodeId as ind
+WITH gds.util.asNode(ind) AS n1, componentId
+WITH collect(n1) AS AllNodes, componentId, n1
+WHERE n1.municipi <> 'null'
+RETURN DISTINCT n1.any_padro AS `Any_padro`, n1.municipi AS `Municipi`, max(componentId) AS `Components Conexes`;
+
+//Nodes sense connexió amb cap habitatge
+CALL gds.wcc.stream('Ex3_1')
+YIELD componentId, nodeId
+WITH componentId AS c, collect(nodeId) as n1,
+size(collect(nodeId)) as components
+WHERE components = 1
+MATCH (n)
+WHERE id(n) in n1
+RETURN count(n) AS Nodes, collect(n.name+" "+n.surname) AS Persones;
