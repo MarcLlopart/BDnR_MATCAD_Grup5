@@ -15,7 +15,7 @@ YIELD componentId, nodeId as ind
 WITH gds.util.asNode(ind) AS n1, componentId
 WITH collect(n1) AS AllNodes, componentId, n1
 WHERE n1.municipi <> 'null'
-RETURN DISTINCT n1.any_padro AS `Any_padro`, n1.municipi AS `Municipi`, max(componentId) AS `Components Conexes`;
+RETURN DISTINCT n1.any_padro AS `Any_padro`, n1.municipi AS `Municipi`, max(componentId) AS `Components Connexes`;
 
 //Nodes sense connexió amb cap habitatge
 CALL gds.wcc.stream('Ex3_1')
